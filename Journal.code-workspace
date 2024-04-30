@@ -1,0 +1,25 @@
+{
+  "folders": [
+    {
+      "path": ".",
+    },
+  ],
+  "settings": {
+    "typescript.tsdk": ".yarn/sdks/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "files.associations": {
+      ".env.*.local": "properties",
+      ".env.*": "properties",
+    },
+    "terminal.integrated.env.linux": {
+      "CACHE_DIR": "${workspaceFolder}/.cache",
+    },
+    "terminal.integrated.env.osx": {
+      "CACHE_DIR": "${workspaceFolder}/.cache",
+    },
+    "terminal.integrated.env.windows": {
+      "CACHE_DIR": "${workspaceFolder}\\.cache",
+    },
+    "prettier.configPath": ".prettierrc.mjs",
+  },
+}
