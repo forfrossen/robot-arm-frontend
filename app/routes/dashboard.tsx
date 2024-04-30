@@ -3,7 +3,7 @@
 /* SPDX-License-Identifier: MIT */
 import { useEffect, useState } from "react";
 
-import { Box, Button, Container, Typography } from "@mui/joy";
+import { Box, Button, Container } from "@mui/joy";
 
 import { io } from "socket.io-client";
 
@@ -42,11 +42,6 @@ export const Component = function Dashboard(): JSX.Element {
   return (
     <Container sx={{ py: 2 }}>
       <Box>
-        <Box>
-          <Typography sx={{ mr: 2 }} level="h2">
-            Dashboard!
-          </Typography>
-        </Box>
         <Box>
           Socket: {isConnected ? "Connected" : "Disconnected"}
           <Button size="sm" onClick={() => socket.connect()} disabled={isConnected}>
