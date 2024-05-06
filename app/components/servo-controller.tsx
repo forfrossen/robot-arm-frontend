@@ -12,7 +12,7 @@ type ServoControllerProps = {
 export const ServoController = (props: Readonly<ServoControllerProps>) => {
   const { handleValueChange, name } = props;
   const [value, setValue] = React.useState<string>("0");
-  const angles = ["0", "45", "90", "135", "180", "225"];
+  const angles = ["0", "45", "90", "135", "180"];
   const capitalizedName = name.charAt(0).toUpperCase() + name.slice(1);
   const valueChange = (event, newValue) => {
     if (!newValue) return;

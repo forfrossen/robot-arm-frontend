@@ -14,17 +14,17 @@ export const Component = function Dashboard(): JSX.Element {
   usePageEffect({ title: "Dashboard" });
   const socket = io("ws://localhost:3001", {
     autoConnect: true,
-    ackTimeout: 10000,
-    retries: 3,
   });
   const [isConnected, setIsConnected] = useState(socket.connected);
 
   useEffect(() => {
     function onConnect() {
+      console.log("Socket Connected!");
       setIsConnected(true);
     }
 
     function onDisconnect() {
+      console.log("Socket Disconnected!");
       setIsConnected(false);
     }
 
@@ -34,6 +34,7 @@ export const Component = function Dashboard(): JSX.Element {
     return () => {
       socket.off("connect", onConnect);
       socket.off("disconnect", onDisconnect);
+      socket.disconnect();
     };
   }, []);
 
@@ -41,7 +42,7 @@ export const Component = function Dashboard(): JSX.Element {
 
   const valueChangeHandler = (value: string, name: string): void => {
     console.log(`Value of ${name} changed to ${value}`);
-    socket.emit(name, { pos: Number(value) });
+    socket.emit("servo", { name: name, pos: Number(value) });
   };
 
   return (

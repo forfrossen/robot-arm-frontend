@@ -5,7 +5,7 @@
 /* SPDX-License-Identifier: MIT */
 import react from "@vitejs/plugin-react";
 import { fileURLToPath, URL } from "node:url";
-import { defineConfig, loadEnv } from "vite";
+import { defineConfig, loadEnv, PluginOption } from "vite";
 
 const publicEnvVars = [
   "APP_ENV",
@@ -18,6 +18,13 @@ const publicEnvVars = [
   //"GA_MEASUREMENT_ID",
 ];
 
+const fullReloadAlways: PluginOption = {
+  name: "full-reload-always",
+  handleHotUpdate({ server }) {
+    server.ws.send({ type: "full-reload" });
+    return [];
+  },
+} as PluginOption;
 /**
  * Vite configuration.
  * https://vitejs.dev/config/
@@ -33,7 +40,7 @@ export default defineConfig(async ({ mode }) => {
 
   return {
     cacheDir: fileURLToPath(new URL("../.cache/vite-app", import.meta.url)),
-
+    fullReloadAlways,
     build: {
       rollupOptions: {
         output: {
