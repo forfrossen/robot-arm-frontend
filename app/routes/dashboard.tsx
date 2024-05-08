@@ -5,19 +5,23 @@ import { useEffect, useState } from "react";
 
 import { Box, Button, Container } from "@mui/joy";
 
-import { io } from "socket.io-client";
+import { io, Socket } from "socket.io-client";
 
 import { ServoController } from "../components/servo-controller";
 import { usePageEffect } from "../core/page";
 
 export const Component = function Dashboard(): JSX.Element {
   usePageEffect({ title: "Dashboard" });
-  const socket = io("ws://localhost:3001", {
-    autoConnect: true,
-  });
-  const [isConnected, setIsConnected] = useState(socket.connected);
+  const [socket, setSocket] = useState<null | Socket>(null);
+  const [isConnected, setIsConnected] = useState(socket?.connected);
 
   useEffect(() => {
+    const newSocket = io("ws://localhost:3001", {
+      autoConnect: true,
+    });
+
+    setSocket(newSocket);
+
     function onConnect() {
       console.log("Socket Connected!");
       setIsConnected(true);
@@ -28,21 +32,22 @@ export const Component = function Dashboard(): JSX.Element {
       setIsConnected(false);
     }
 
-    socket.on("connect", onConnect);
-    socket.on("disconnect", onDisconnect);
+    newSocket.on("connect", onConnect);
+    newSocket.on("disconnect", onDisconnect);
 
     return () => {
-      socket.off("connect", onConnect);
-      socket.off("disconnect", onDisconnect);
-      socket.disconnect();
+      newSocket.off("connect", onConnect);
+      newSocket.off("disconnect", onDisconnect);
+      newSocket.disconnect();
+      newSocket.close();
     };
-  }, []);
+  }, [setSocket]);
 
   const servos = ["baseTurner", "shoulder", "elbow", "wrist", "wristTurner", "gripper"];
 
   const valueChangeHandler = (value: string, name: string): void => {
     console.log(`Value of ${name} changed to ${value}`);
-    socket.emit("servo", { name: name, pos: Number(value) });
+    socket?.emit("servo", { name: name, pos: Number(value) });
   };
 
   return (
