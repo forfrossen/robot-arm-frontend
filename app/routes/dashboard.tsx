@@ -1,7 +1,7 @@
 /* SPDX-FileCopyrightText: 2014-present Kriasoft */
 
 /* SPDX-License-Identifier: MIT */
-import { useEffect, useState } from "react";
+import { useEffect, useReducer, useState } from "react";
 
 import { Box, Button, Container } from "@mui/joy";
 
@@ -14,6 +14,8 @@ export const Component = function Dashboard(): JSX.Element {
   usePageEffect({ title: "Dashboard" });
   const [socket, setSocket] = useState<null | Socket>(null);
   const [isConnected, setIsConnected] = useState(socket?.connected);
+
+  const [state, dispatch] = useReducer(servoValueReducer, { ...initialState });
 
   useEffect(() => {
     const newSocket = io("ws://localhost:3001", {
@@ -35,6 +37,11 @@ export const Component = function Dashboard(): JSX.Element {
     newSocket.on("connect", onConnect);
     newSocket.on("disconnect", onDisconnect);
 
+    newSocket.on("servoPosition", (data: ServoPositionMessage) => {
+      console.log(`Incoming socket data for ${data.servoName} - ${data.pos}`);
+      dispatch({ type: ServoReducerActionType.SET, payload: { ...data } });
+    });
+
     return () => {
       newSocket.off("connect", onConnect);
       newSocket.off("disconnect", onDisconnect);
@@ -43,11 +50,16 @@ export const Component = function Dashboard(): JSX.Element {
     };
   }, [setSocket]);
 
-  const servos = ["baseTurner", "shoulder", "elbow", "wrist", "wristTurner", "gripper"];
+  const servos: Servo[] = ["baseTurner", "shoulder", "elbow", "wrist", "wristTurner", "gripper"];
 
-  const valueChangeHandler = (value: string, name: string): void => {
-    console.log(`Value of ${name} changed to ${value}`);
-    socket?.emit("servo", { name: name, pos: Number(value) });
+  const valueChangeHandler = (value: string, servoName: Servo): void => {
+    console.log(`Value of ${servoName} changed to ${value}`);
+    const msg: ServoPositionMessage = { servoName: servoName, pos: Number(value) };
+    dispatch({
+      type: ServoReducerActionType.SET,
+      payload: { servoName: servoName, pos: Number(value) },
+    });
+    socket?.emit("servo", msg);
   };
 
   return (
@@ -55,16 +67,76 @@ export const Component = function Dashboard(): JSX.Element {
       <Box>
         <Box>
           Socket: {isConnected ? "Connected" : "Disconnected"}
-          <Button size="sm" onClick={() => socket.connect()} disabled={isConnected}>
+          <Button size="sm" onClick={() => socket?.connect()} disabled={isConnected}>
             Connect Socket
           </Button>
         </Box>
-        {servos.map((servo) => {
+        {servos.map((servoName) => {
           return (
-            <ServoController key={servo} name={servo} handleValueChange={valueChangeHandler} />
+            <ServoController
+              key={servoName}
+              name={servoName}
+              value={state[servoName]}
+              handleValueChange={valueChangeHandler}
+            />
           );
         })}
       </Box>
     </Container>
   );
 };
+
+type ServoPositionMessage = {
+  servoName: Servo;
+  pos: number;
+};
+
+type Servo = "baseTurner" | "shoulder" | "elbow" | "wrist" | "wristTurner" | "gripper";
+
+enum ServoReducerActionType {
+  SET = "set",
+}
+
+type ServoReducerActionPayload = {
+  servoName: Servo;
+  pos: number;
+};
+
+type ServoReducerAction = {
+  type: ServoReducerActionType;
+  payload: ServoReducerActionPayload;
+};
+
+type ServoReducerState = {
+  [K in Servo]: number;
+};
+
+const initialState: ServoReducerState = {
+  baseTurner: 0,
+  shoulder: 0,
+  elbow: 0,
+  wrist: 0,
+  wristTurner: 0,
+  gripper: 0,
+};
+
+function servoValueReducer(state: ServoReducerState, action: ServoReducerAction) {
+  const { type, payload } = action;
+
+  switch (type) {
+    case ServoReducerActionType.SET: {
+      console.log("Reducer Log: ", payload);
+      const { servoName, pos } = payload;
+      if (state[servoName] === pos) {
+        console.log("No need to update state. Position already known");
+        return state;
+      }
+      return {
+        ...state,
+        [servoName]: pos,
+      };
+    }
+    default:
+      return state;
+  }
+}
