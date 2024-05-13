@@ -7,6 +7,7 @@ import { CssBaseline, CssVarsProvider } from "@mui/joy";
 
 import { RecoilRoot } from "recoil";
 
+import { useGLTF } from "@react-three/drei";
 import { SnackbarProvider } from "notistack";
 import { createRoot } from "react-dom/client";
 
@@ -32,3 +33,4 @@ root.render(
 if (import.meta.hot) {
   import.meta.hot.dispose(() => root.unmount());
 }
+useGLTF.preload("../assets/robot_arm.glb");

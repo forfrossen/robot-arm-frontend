@@ -6,11 +6,17 @@ import { useEffect, useReducer, useState } from "react";
 import { Box, Button, Container } from "@mui/joy";
 
 import { io, Socket } from "socket.io-client";
-import { homog, rotate, vector } from "vektor";
 
-import { RobotArmGui } from "../components/robot-arm-gui";
 import { ServoController } from "../components/servo-controller";
+import { ThreeFibre } from "../components/three-fibre";
 import { usePageEffect } from "../core/page";
+import {
+  initialState,
+  Servo,
+  ServoPositionMessage,
+  ServoReducerActionType,
+  servoValueReducer,
+} from "./servoValueReducer";
 
 export const Component = function Dashboard(): JSX.Element {
   usePageEffect({ title: "Dashboard" });
@@ -66,16 +72,16 @@ export const Component = function Dashboard(): JSX.Element {
 
   return (
     <Container sx={{ py: 2 }}>
-      <Box>
-        <RobotArmGui />
+      <Box sx={{ py: 2, background: "#303035", height: 800 }}>
+        <ThreeFibre />
       </Box>
       <Box>
-        <Box>
-          Socket: {isConnected ? "Connected" : "Disconnected"}
-          <Button size="sm" onClick={() => socket?.connect()} disabled={isConnected}>
-            Connect Socket
-          </Button>
-        </Box>
+        Socket: {isConnected ? "Connected" : "Disconnected"}
+        <Button size="sm" onClick={() => socket?.connect()} disabled={isConnected}>
+          Connect Socket
+        </Button>
+      </Box>
+      <Box sx={{ py: 2 }}>
         {servos.map((servoName) => {
           return (
             <ServoController
@@ -90,58 +96,3 @@ export const Component = function Dashboard(): JSX.Element {
     </Container>
   );
 };
-
-type ServoPositionMessage = {
-  servoName: Servo;
-  pos: number;
-};
-
-type Servo = "baseTurner" | "shoulder" | "elbow" | "wrist" | "wristTurner" | "gripper";
-
-enum ServoReducerActionType {
-  SET = "set",
-}
-
-type ServoReducerActionPayload = {
-  servoName: Servo;
-  pos: number;
-};
-
-type ServoReducerAction = {
-  type: ServoReducerActionType;
-  payload: ServoReducerActionPayload;
-};
-
-type ServoReducerState = {
-  [K in Servo]: number;
-};
-
-const initialState: ServoReducerState = {
-  baseTurner: 0,
-  shoulder: 0,
-  elbow: 0,
-  wrist: 0,
-  wristTurner: 0,
-  gripper: 0,
-};
-
-function servoValueReducer(state: ServoReducerState, action: ServoReducerAction) {
-  const { type, payload } = action;
-
-  switch (type) {
-    case ServoReducerActionType.SET: {
-      console.log("Reducer Log: ", payload);
-      const { servoName, pos } = payload;
-      if (state[servoName] === pos) {
-        console.log("No need to update state. Position already known");
-        return state;
-      }
-      return {
-        ...state,
-        [servoName]: pos,
-      };
-    }
-    default:
-      return state;
-  }
-}
