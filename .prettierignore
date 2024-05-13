@@ -63,4 +63,12 @@ yarn.lock
 **/api.ts
 .eslintrc.cjs
 .yarnrc.yml
+yarn.lock
 Journal.nswag
+**/robot-arm-gui.tsx
+**/Hmi.js
+**/RobotTHREE.js
+**/Robot.Gui.js
+**/Target.js
+**/Target.Gui.js
+**/WorkingSpace.js

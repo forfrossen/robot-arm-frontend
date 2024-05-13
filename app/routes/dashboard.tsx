@@ -6,7 +6,9 @@ import { useEffect, useReducer, useState } from "react";
 import { Box, Button, Container } from "@mui/joy";
 
 import { io, Socket } from "socket.io-client";
+import { homog, rotate, vector } from "vektor";
 
+import { RobotArmGui } from "../components/robot-arm-gui";
 import { ServoController } from "../components/servo-controller";
 import { usePageEffect } from "../core/page";
 
@@ -19,7 +21,7 @@ export const Component = function Dashboard(): JSX.Element {
 
   useEffect(() => {
     const newSocket = io("ws://localhost:3001", {
-      autoConnect: true,
+      autoConnect: false,
     });
 
     setSocket(newSocket);
@@ -64,6 +66,9 @@ export const Component = function Dashboard(): JSX.Element {
 
   return (
     <Container sx={{ py: 2 }}>
+      <Box>
+        <RobotArmGui />
+      </Box>
       <Box>
         <Box>
           Socket: {isConnected ? "Connected" : "Disconnected"}
